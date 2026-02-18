@@ -1,0 +1,220 @@
+# =============================================================================
+# .gitignore — Processor Architecture & Design
+# Verilog + Xilinx Vivado project
+# =============================================================================
+
+
+# =============================================================================
+# Xilinx Vivado — Generated & Cache Files
+# =============================================================================
+
+# Vivado project internals (keep only .xpr and source files)
+*.jou                   # Journal files
+*.log                   # Log files
+*.str                   # Vivado strategy files
+*.pb                    # Protocol buffer files
+
+# Vivado auto-generated directories
+.Xil/
+.cache/
+.hbs/
+.srcs/
+vivado_pid*.str
+vivado*.jou
+vivado*.log
+
+# IP cores — generated output (keep .xci source, ignore generated output)
+*/ip/**/*.vho
+*/ip/**/*.veo
+*/ip/**/*.xdc
+*/ip/**/sim/
+*/ip/**/hdl/
+*/ip/**/doc/
+*/ip/**/synth/
+*/ip/**/impl/
+
+# Vivado project run directories
+*/runs/
+*.runs/
+*.sim/
+*.ip_user_files/
+*.gen/
+*.hw/
+*.cache/
+*.hbs/
+*.srcs/utils_1/
+
+# Bitstream & programming files (large binaries — regenerate from project)
+*.bit
+*.bin
+*.mcs
+*.prm
+*.ltx
+
+# Checkpoint & implementation files
+*.dcp
+*.xclbin
+*.rpt
+*.xml
+
+# Timing / utilization reports (auto-generated)
+*.rpx
+
+# Vivado HLS
+solution*/
+*.ap_*
+*.sln
+
+# Simulation waveform files
+*.vcd
+*.ghw
+*.fst
+*.wdb
+*.wcfg
+
+
+# =============================================================================
+# Verilog / SystemVerilog / VHDL — Simulation & Synthesis Artifacts
+# =============================================================================
+
+# ModelSim / Questa
+work/
+transcript
+vsim.wlf
+*.wlf
+modelsim.ini
+
+# Icarus Verilog
+*.vvp
+a.out
+
+# GHDL
+*.cf
+
+# Synopsys / Cadence
+*.svf
+*.fsdb
+*.shm/
+*.trn
+*.dsn
+*.syn
+*.mr
+*.pvl
+*.syn
+*.svdb/
+
+# Yosys
+*.blif
+*.edif
+*.json.bak
+
+
+# =============================================================================
+# Editor & IDE Junk
+# =============================================================================
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# JetBrains (CLion, etc.)
+.idea/
+*.iml
+
+# Vim / Neovim
+*.swp
+*.swo
+*~
+.netrwhist
+
+# Emacs
+\#*\#
+.\#*
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Notepad++
+nppBackup/
+
+
+# =============================================================================
+# macOS Junk
+# =============================================================================
+
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+Icon
+Icon?
+
+# Thumbnails
+ehthumbs.db
+ehthumbs_vista.db
+
+# macOS folder metadata
+__MACOSX/
+
+
+# =============================================================================
+# Windows Junk
+# =============================================================================
+
+Thumbs.db
+Thumbs.db:encryptable
+desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+
+# =============================================================================
+# Linux Junk
+# =============================================================================
+
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+
+# =============================================================================
+# Python (scripts, testbenches, automation)
+# =============================================================================
+
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.env
+.venv
+env/
+venv/
+
+
+# =============================================================================
+# Miscellaneous
+# =============================================================================
+
+# Compressed archives
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Backup files
+*.bak
+*.orig
+*.tmp
+
+# PDF datasheets / docs (optional — comment out if you want to track these)
+# *.pdf
