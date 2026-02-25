@@ -43,16 +43,11 @@ module tb_pipeline;
     end
 
 
+    // Both PR and Stage2 update on posedge slow_clk (NBA semantics give clean 1-cycle separation)
     always @(posedge slow_clk) begin
         if (rst_n)
-            $display("[%0t ns] ---- slow_clk POSEDGE: Stage2 latches PR=%0d  =>  result=%0d ----",
-                     $time, pr_data_out, s2_result);
-    end
-
-    always @(negedge slow_clk) begin
-        if (rst_n)
-            $display("[%0t ns] ==== slow_clk NEGEDGE: PR latches S1_out=%0d ====",
-                     $time, s1_data_out);
+            $display("[%0t ns] ---- slow_clk POSEDGE: PR latches S1_out=%0d | Stage2 computes result=%0d (from old PR) ----",
+                     $time, s1_data_out, s2_result);
     end
 
     initial begin

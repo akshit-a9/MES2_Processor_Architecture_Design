@@ -59,14 +59,16 @@ module stage1 (
     end
 endmodule
 
-// Pipeline Register - Captures Stage 1's output on the NEGATIVE edge of slow_clk.
+// Pipeline Register - Captures Stage 1's output on the POSITIVE edge of slow_clk.
+// Stage 2 also triggers on posedge; Verilog NBA semantics ensure Stage 2 reads
+// the old PR value while PR updates to the new Stage 1 output simultaneously.
 module pipeline_register (
     input  wire       slow_clk,
     input  wire       rst_n,
     input  wire [7:0] d_in,
     output reg  [7:0] d_out
 );
-    always @(negedge slow_clk or negedge rst_n) begin
+    always @(posedge slow_clk or negedge rst_n) begin
         if (!rst_n)
             d_out <= 8'd0;
         else
@@ -75,6 +77,8 @@ module pipeline_register (
 endmodule
 
 // Stage 2 - Doubles the Pipeline Register value on every positive edge of slow_clk.
+// This is the SAME edge as the Pipeline Register, so Stage 2 is exactly 1 slow_clk
+// cycle behind the Pipeline Register update (NBA semantics handle the ordering).
 module stage2 (
     input  wire       slow_clk,
     input  wire       rst_n,
