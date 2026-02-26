@@ -76,20 +76,54 @@ module pipeline_register (
     end
 endmodule
 
-// Stage 2 - Doubles the Pipeline Register value on every positive edge of slow_clk.
-// This is the SAME edge as the Pipeline Register, so Stage 2 is exactly 1 slow_clk
-// cycle behind the Pipeline Register update (NBA semantics handle the ordering).
+// Stage 2
+// s2_latch : captures the PR value immediately on posedge slow_clk (no delay)
+// s2_result: computes (pr_data << 1) after a random 1-3 fast_clk cycle delay
 module stage2 (
+    input  wire       fast_clk,
     input  wire       slow_clk,
     input  wire       rst_n,
     input  wire [7:0] pr_data,
-    output reg  [7:0] result
+    output reg  [7:0] s2_latch,   // exact PR input, latched immediately
+    output reg  [7:0] s2_result   // result after random fast-cycle delay
 );
+    // --- s2_latch: capture PR on posedge slow_clk, no extra delay ---
     always @(posedge slow_clk or negedge rst_n) begin
         if (!rst_n)
-            result <= 8'd0;
+            s2_latch <= 8'd0;
         else
-            result <= pr_data << 1;  
+            s2_latch <= pr_data;
+    end
+
+    // --- s2_result: random 1-3 fast_clk delay then compute ---
+    integer delay_cnt;
+    integer rand_delay;
+    reg     computing;
+    reg [7:0] captured_pr;  // holds the PR value when computation starts
+
+    always @(posedge fast_clk or negedge rst_n) begin
+        if (!rst_n) begin
+            s2_result   <= 8'd0;
+            delay_cnt   <= 0;
+            rand_delay  <= 0;
+            computing   <= 1'b0;
+            captured_pr <= 8'd0;
+        end else begin
+            if (!computing) begin
+                captured_pr <= s2_latch;       // snapshot the latched input
+                rand_delay  <= ($random % 3);
+                delay_cnt   <= 0;
+                computing   <= 1'b1;
+            end else begin
+                if (delay_cnt < rand_delay - 1) begin
+                    delay_cnt <= delay_cnt + 1;
+                end else begin
+                    s2_result <= captured_pr << 1;
+                    computing <= 1'b0;
+                    delay_cnt <= 0;
+                end
+            end
+        end
     end
 endmodule
 
@@ -101,6 +135,7 @@ module pipeline_top (
     output wire       slow_clk,
     output wire [7:0] s1_data_out,
     output wire [7:0] pr_data_out,
+    output wire [7:0] s2_latch,
     output wire [7:0] s2_result
 );
     // Stage 1 always increments the last value committed by the PR
@@ -127,10 +162,12 @@ module pipeline_top (
     );
 
     stage2 u_stage2 (
-        .slow_clk(slow_clk),
-        .rst_n   (rst_n),
-        .pr_data (pr_data_out),
-        .result  (s2_result)
+        .fast_clk (fast_clk),
+        .slow_clk (slow_clk),
+        .rst_n    (rst_n),
+        .pr_data  (pr_data_out),
+        .s2_latch (s2_latch),
+        .s2_result(s2_result)
     );
 
 endmodule

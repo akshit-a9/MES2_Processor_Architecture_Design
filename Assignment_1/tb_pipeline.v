@@ -11,6 +11,7 @@ module tb_pipeline;
     wire       slow_clk;
     wire [7:0] s1_data_out;
     wire [7:0] pr_data_out;
+    wire [7:0] s2_latch;
     wire [7:0] s2_result;
 
     pipeline_top dut (
@@ -19,6 +20,7 @@ module tb_pipeline;
         .slow_clk    (slow_clk),
         .s1_data_out (s1_data_out),
         .pr_data_out (pr_data_out),
+        .s2_latch    (s2_latch),
         .s2_result   (s2_result)
     );
 
@@ -35,19 +37,20 @@ module tb_pipeline;
     end
 
     initial begin
-        $monitor("[%0t ns] fast_clk=%b slow_clk=%b | S1: out=%0d | PR: %0d | S2_result: %0d",
+        $monitor("[%0t ns] fast_clk=%b slow_clk=%b | S1_out=%0d | PR=%0d | S2_latch=%0d | S2_result=%0d",
                  $time, fast_clk, slow_clk,
                  s1_data_out,
                  pr_data_out,
+                 s2_latch,
                  s2_result);
     end
 
 
-    // Both PR and Stage2 update on posedge slow_clk (NBA semantics give clean 1-cycle separation)
+    // On posedge slow_clk: PR and s2_latch both update immediately (no delay)
     always @(posedge slow_clk) begin
         if (rst_n)
-            $display("[%0t ns] ---- slow_clk POSEDGE: PR latches S1_out=%0d | Stage2 computes result=%0d (from old PR) ----",
-                     $time, s1_data_out, s2_result);
+            $display("[%0t ns] ---- slow_clk POSEDGE: PR=%0d -> S2_latch captures PR (no delay); S2_result=%0d (random-delay output) ----",
+                     $time, pr_data_out, s2_result);
     end
 
     initial begin
