@@ -9,7 +9,9 @@ module tb_pipeline;
     reg  rst_n;
 
     wire       slow_clk;
+    wire [7:0] s1_data_in;
     wire [7:0] s1_data_out;
+    wire [7:0] pr_data_in;
     wire [7:0] pr_data_out;
     wire [7:0] s2_latch;
     wire [7:0] s2_result;
@@ -18,7 +20,9 @@ module tb_pipeline;
         .fast_clk    (fast_clk),
         .rst_n       (rst_n),
         .slow_clk    (slow_clk),
+        .s1_data_in  (s1_data_in),
         .s1_data_out (s1_data_out),
+        .pr_data_in  (pr_data_in),
         .pr_data_out (pr_data_out),
         .s2_latch    (s2_latch),
         .s2_result   (s2_result)
@@ -30,23 +34,24 @@ module tb_pipeline;
 
     initial begin
         rst_n = 1'b0;
-        repeat (4) @(posedge fast_clk);   // hold reset for 4 fast_clk cycles
-        @(negedge fast_clk);              // release on a negedge for clean timing
+        repeat (4) @(posedge fast_clk);  
+        @(negedge fast_clk);          
         rst_n = 1'b1;
         $display("\n[%0t ns] *** Reset released ***\n", $time);
     end
 
     initial begin
-        $monitor("[%0t ns] fast_clk=%b slow_clk=%b | S1_out=%0d | PR=%0d | S2_latch=%0d | S2_result=%0d",
+        $monitor("[%0t ns] fast_clk=%b slow_clk=%b | S1_in=%0d S1_out=%0d | PR_in=%0d PR_out=%0d | S2_latch=%0d S2_result=%0d",
                  $time, fast_clk, slow_clk,
+                 s1_data_in,
                  s1_data_out,
+                 pr_data_in,
                  pr_data_out,
                  s2_latch,
                  s2_result);
     end
 
 
-    // On posedge slow_clk: PR and s2_latch both update immediately (no delay)
     always @(posedge slow_clk) begin
         if (rst_n)
             $display("[%0t ns] ---- slow_clk POSEDGE: PR=%0d -> S2_latch captures PR (no delay); S2_result=%0d (random-delay output) ----",

@@ -59,9 +59,7 @@ module stage1 (
     end
 endmodule
 
-// Pipeline Register - Captures Stage 1's output on the POSITIVE edge of slow_clk.
-// Stage 2 also triggers on posedge; Verilog NBA semantics ensure Stage 2 reads
-// the old PR value while PR updates to the new Stage 1 output simultaneously.
+// Pipeline Register - Captures Stage 1's output as soon as it is ready now. Then, releases at posedge. 
 module pipeline_register (
     input  wire       slow_clk,
     input  wire       rst_n,
@@ -77,29 +75,22 @@ module pipeline_register (
 endmodule
 
 // Stage 2
-// s2_latch : captures the PR value immediately on posedge slow_clk (no delay)
-// s2_result: computes (pr_data << 1) after a random 1-3 fast_clk cycle delay
 module stage2 (
     input  wire       fast_clk,
     input  wire       slow_clk,
     input  wire       rst_n,
     input  wire [7:0] pr_data,
-    output reg  [7:0] s2_latch,   // exact PR input, latched immediately
-    output reg  [7:0] s2_result   // result after random fast-cycle delay
+    output wire [7:0] s2_latch, 
+    output reg  [7:0] s2_result   
 );
-    // --- s2_latch: capture PR on posedge slow_clk, no extra delay ---
-    always @(posedge slow_clk or negedge rst_n) begin
-        if (!rst_n)
-            s2_latch <= 8'd0;
-        else
-            s2_latch <= pr_data;
-    end
 
-    // --- s2_result: random 1-3 fast_clk delay then compute ---
+    assign s2_latch = pr_data;
+
+    // s2_result
     integer delay_cnt;
     integer rand_delay;
     reg     computing;
-    reg [7:0] captured_pr;  // holds the PR value when computation starts
+    reg [7:0] captured_pr;  
 
     always @(posedge fast_clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -110,7 +101,7 @@ module stage2 (
             captured_pr <= 8'd0;
         end else begin
             if (!computing) begin
-                captured_pr <= s2_latch;       // snapshot the latched input
+                captured_pr <= s2_latch;       
                 rand_delay  <= ($random % 3);
                 delay_cnt   <= 0;
                 computing   <= 1'b1;
@@ -131,15 +122,27 @@ endmodule
 module pipeline_top (
     input  wire       fast_clk,
     input  wire       rst_n,
-    // Observation ports
     output wire       slow_clk,
+    output reg  [7:0] s1_data_in,   
     output wire [7:0] s1_data_out,
+    output wire [7:0] pr_data_in,
     output wire [7:0] pr_data_out,
     output wire [7:0] s2_latch,
     output wire [7:0] s2_result
 );
-    // Stage 1 always increments the last value committed by the PR
-    wire [7:0] input_to_s1 = pr_data_out;
+    reg s1_started;
+    always @(posedge slow_clk or negedge rst_n) begin
+        if (!rst_n) begin
+            s1_data_in <= 8'd0;
+            s1_started <= 1'b0;
+        end else if (!s1_started) begin
+            s1_started <= 1'b1;
+        end else begin
+            s1_data_in <= s1_data_in + 1'b1;
+        end
+    end
+
+    assign pr_data_in = s1_data_out;
 
     clk_divider u_clk_div (
         .fast_clk(fast_clk),
@@ -150,7 +153,7 @@ module pipeline_top (
     stage1 u_stage1 (
         .fast_clk (fast_clk),
         .rst_n    (rst_n),
-        .input_val(input_to_s1),
+        .input_val(pr_data_out),   // direct combinational feed, s1_data_in is observation only
         .data_out (s1_data_out)
     );
 
