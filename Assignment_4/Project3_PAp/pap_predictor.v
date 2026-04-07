@@ -25,9 +25,7 @@ module pap_predictor #(
     output wire [1:0]              pht_select         // which PHT is active (waveform)
 );
 
-    // -----------------------------------------------------------------
     // Internal signals
-    // -----------------------------------------------------------------
     reg [HISTORY_BITS-1:0] bht     [0:BHT_ENTRIES-1];         // Branch History Table
     reg [1:0]              phts    [0:NUM_PHTS-1][0:PHT_ENTRIES-1]; // NUM_PHTS separate PHTs
 
@@ -43,9 +41,7 @@ module pap_predictor #(
     // Prediction = MSB of the selected PHT entry in the selected PHT bank
     assign prediction = phts[pht_idx][entry_idx][1];
 
-    // -----------------------------------------------------------------
     // Snapshots at fetch time — used to update the right PHT row later
-    // -----------------------------------------------------------------
     reg [1:0]              pht_idx_at_fetch;
     reg [HISTORY_BITS-1:0] entry_idx_at_fetch;
     reg [PC_BITS-1:0]      pc_at_fetch;
@@ -63,9 +59,7 @@ module pap_predictor #(
         end
     end
 
-    // -----------------------------------------------------------------
     // PHT update and BHT shift at resolution
-    // -----------------------------------------------------------------
     integer i, j;
     always @(posedge clk) begin
         if (reset) begin

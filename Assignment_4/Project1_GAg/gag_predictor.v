@@ -19,9 +19,7 @@ module gag_predictor #(
     output wire [HISTORY_BITS-1:0] ghr_out         // current GHR (for waveform)
 );
 
-    // -----------------------------------------------------------------
     // Internal signals
-    // -----------------------------------------------------------------
     reg  [HISTORY_BITS-1:0] ghr;            // Global History Register
     reg  [HISTORY_BITS-1:0] ghr_at_fetch;  // GHR snapshot used at fetch time
 
@@ -32,14 +30,12 @@ module gag_predictor #(
     // Expose GHR on the output port
     assign ghr_out = ghr;
 
-    // -----------------------------------------------------------------
+
     // Prediction: index the PHT with the current GHR, MSB = prediction
-    // -----------------------------------------------------------------
     assign prediction = pht_state[ghr][1];
 
-    // -----------------------------------------------------------------
+
     // Latch the GHR value used at fetch so we update the correct entry
-    // -----------------------------------------------------------------
     // Capture which PHT row was used for the current fetch
     always @(posedge clk) begin
         if (reset) begin
@@ -49,10 +45,8 @@ module gag_predictor #(
         end
     end
 
-    // -----------------------------------------------------------------
     // PHT update and GHR shift — both happen at resolution
     // Assumption: fetch and resolution happen in the same cycle.
-    // -----------------------------------------------------------------
     integer i;
     always @(posedge clk) begin
         if (reset) begin

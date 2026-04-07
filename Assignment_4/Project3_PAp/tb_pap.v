@@ -13,9 +13,6 @@
 
 module tb_pap;
 
-    // -----------------------------------------------------------------
-    // DUT signals
-    // -----------------------------------------------------------------
     reg        clk;
     reg        reset;
     reg        branch_detected;
@@ -28,9 +25,6 @@ module tb_pap;
     // Cycle counter for display
     integer cycle_count;
 
-    // -----------------------------------------------------------------
-    // Instantiate PAp predictor
-    // -----------------------------------------------------------------
     pap_predictor #(
         .HISTORY_BITS(4),
         .PC_BITS(4),
@@ -48,16 +42,9 @@ module tb_pap;
         .pht_select     (pht_select)
     );
 
-    // -----------------------------------------------------------------
-    // Clock generation — 10 ns period
-    // -----------------------------------------------------------------
     initial clk = 0;
     always #5 clk = ~clk;
 
-    // -----------------------------------------------------------------
-    // Periodic display: cycle, pc, branch_detected, branch_taken,
-    //                   prediction, BHT row, pht_select
-    // -----------------------------------------------------------------
     always @(posedge clk) begin
         cycle_count = cycle_count + 1;
         $display("CYC=%0d | pc=%b branch_det=%b taken=%b | prediction=%b | bht_out=%b pht_sel=%b",
@@ -65,17 +52,11 @@ module tb_pap;
                  prediction, bht_out, pht_select);
     end
 
-    // -----------------------------------------------------------------
-    // Waveform dump
-    // -----------------------------------------------------------------
     initial begin
         $dumpfile("pap.vcd");
         $dumpvars(0, tb_pap);
     end
 
-    // -----------------------------------------------------------------
-    // Stimulus
-    // -----------------------------------------------------------------
     integer rep;
     integer k;
     reg [15:0] rand_seq;
@@ -88,19 +69,12 @@ module tb_pap;
         pc              = 4'b0000;
         reset           = 1;
 
-        // ============================================================
-        // Phase 1 — Reset (hold for 2 cycles)
-        // ============================================================
         $display("\n===== PHASE 1: RESET =====");
         @(posedge clk); #1;
         @(posedge clk); #1;
         reset = 0;
         $display("Reset released. Expect prediction = 0 (not-taken).");
 
-        // ============================================================
-        // Phase 2 — Loop simulation: 8T + 1NT × 3 reps, PC = 4'b0001
-        // PC[1:0] = 01 → PHT bank 1 is used throughout this phase.
-        // ============================================================
         $display("\n===== PHASE 2: LOOP SIMULATION (8T + 1NT, 3 repetitions, PC=0001) =====");
         pc = 4'b0001;
         for (rep = 0; rep < 3; rep = rep + 1) begin
@@ -120,13 +94,6 @@ module tb_pap;
         branch_detected = 0;
         branch_taken    = 0;
 
-        // ============================================================
-        // Phase 3 — Correlated branches:
-        //   PC 4'b0001 (PC[1:0]=01, PHT bank 1)
-        //   PC 4'b0010 (PC[1:0]=10, PHT bank 2)
-        //   Pattern T, T, NT across 12 cycles, alternating PCs.
-        // PAp separates these into different PHT banks → less aliasing.
-        // ============================================================
         $display("\n===== PHASE 3: CORRELATED BRANCH SIMULATION (T,T,NT x4, PC alternates) =====");
         for (k = 0; k < 12; k = k + 1) begin
             @(negedge clk);
@@ -144,11 +111,6 @@ module tb_pap;
         branch_detected = 0;
         branch_taken    = 0;
 
-        // ============================================================
-        // Phase 4 — Random stress: 16-bit pseudo-random, PC = 4'b0011
-        // PC[1:0]=11 → PHT bank 3.
-        // Pattern: 16'b1101_1010_1110_0101 (MSB first)
-        // ============================================================
         $display("\n===== PHASE 4: RANDOM STRESS (16 cycles, PC=0011, pht_sel=11) =====");
         pc       = 4'b0011;
         rand_seq = 16'b1101_1010_1110_0101;

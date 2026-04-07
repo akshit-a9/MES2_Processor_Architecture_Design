@@ -22,9 +22,7 @@ module pag_predictor #(
     output wire [HISTORY_BITS-1:0] bht_out          // BHT row selected by pc (waveform)
 );
 
-    // -----------------------------------------------------------------
     // Internal signals
-    // -----------------------------------------------------------------
     reg  [HISTORY_BITS-1:0] bht      [0:BHT_ENTRIES-1]; // Branch History Table
     reg  [1:0]              pht      [0:PHT_SIZE-1];     // shared PHT (2-bit counters)
 
@@ -42,9 +40,7 @@ module pag_predictor #(
     // Prediction = MSB of the PHT entry indexed by the selected BHT row
     assign prediction = pht[pht_index][1];
 
-    // -----------------------------------------------------------------
     // Latch the BHT row and PC used at fetch time for later update
-    // -----------------------------------------------------------------
     always @(posedge clk) begin
         if (reset) begin
             bht_row_at_fetch <= {HISTORY_BITS{1'b0}};
@@ -55,9 +51,7 @@ module pag_predictor #(
         end
     end
 
-    // -----------------------------------------------------------------
     // PHT and BHT update at resolution (same cycle as fetch for simplicity)
-    // -----------------------------------------------------------------
     integer i;
     always @(posedge clk) begin
         if (reset) begin
