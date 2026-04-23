@@ -52,51 +52,47 @@ module fetch_rs6000_tb;
         $display("");
         $display("============================================================");
         $display(" RS/6000 T-Circuit Fetch  -  A[N] = 0xA000_00NN");
-        $display(" Outputs in bank order: inst_out_N = bank N output");
+        $display(" Outputs in fetch/program order:");
+        $display(" inst_out_0 = instruction at start_address, inst_out_K at +4*K");
         $display(" addr        bank row  inst_out_0..7                  result");
         $display("============================================================");
 
         // addr=0x2000  bank=0  row=0
-        // all banks: no wrap -> row 0
-        // b0=A0  b1=A1  b2=A2  b3=A3  b4=A4  b5=A5  b6=A6  b7=A7
+        // fetch seq starts at bank0/row0 -> A0,A1,A2,A3,A4,A5,A6,A7
         check(32'h2000,
               32'hA0000000, 32'hA0000001, 32'hA0000002, 32'hA0000003,
               32'hA0000004, 32'hA0000005, 32'hA0000006, 32'hA0000007);
 
         // addr=0x200C  bank=3  row=0
-        // b0,b1,b2: wrap -> row 1 -> A8,A9,A10
-        // b3..b7:   no wrap -> row 0 -> A3,A4,A5,A6,A7
+        // fetch seq starts at bank3/row0=A3, wraps past bank7 into row1
+        // -> A3,A4,A5,A6,A7,A8,A9,A10
         check(32'h200C,
-              32'hA0000008, 32'hA0000009, 32'hA000000A, 32'hA0000003,
-              32'hA0000004, 32'hA0000005, 32'hA0000006, 32'hA0000007);
+              32'hA0000003, 32'hA0000004, 32'hA0000005, 32'hA0000006,
+              32'hA0000007, 32'hA0000008, 32'hA0000009, 32'hA000000A);
 
         // addr=0x2018  bank=6  row=0
-        // b0..b5: wrap -> row 1 -> A8,A9,A10,A11,A12,A13
-        // b6,b7:  no wrap -> row 0 -> A6,A7
+        // fetch seq: A6,A7,A8,A9,A10,A11,A12,A13
         check(32'h2018,
-              32'hA0000008, 32'hA0000009, 32'hA000000A, 32'hA000000B,
-              32'hA000000C, 32'hA000000D, 32'hA0000006, 32'hA0000007);
+              32'hA0000006, 32'hA0000007, 32'hA0000008, 32'hA0000009,
+              32'hA000000A, 32'hA000000B, 32'hA000000C, 32'hA000000D);
 
         // addr=0x201C  bank=7  row=0
-        // b0..b6: wrap -> row 1 -> A8..A14
-        // b7:     no wrap -> row 0 -> A7
+        // fetch seq: A7,A8,A9,A10,A11,A12,A13,A14
         check(32'h201C,
-              32'hA0000008, 32'hA0000009, 32'hA000000A, 32'hA000000B,
-              32'hA000000C, 32'hA000000D, 32'hA000000E, 32'hA0000007);
+              32'hA0000007, 32'hA0000008, 32'hA0000009, 32'hA000000A,
+              32'hA000000B, 32'hA000000C, 32'hA000000D, 32'hA000000E);
 
         // addr=0x2020  bank=0  row=1
-        // all banks: no wrap -> row 1
-        // b0=A8  b1=A9 .. b7=A15
+        // fetch seq: A8,A9,A10,A11,A12,A13,A14,A15
         check(32'h2020,
               32'hA0000008, 32'hA0000009, 32'hA000000A, 32'hA000000B,
               32'hA000000C, 32'hA000000D, 32'hA000000E, 32'hA000000F);
 
         // addr=0x2034  bank=5  row=1
-        // b0..b4: wrap -> row 2 -> A16,A17,A18,A19,A20
-        // b5..b7: no wrap -> row 1 -> A13,A14,A15
+        // fetch seq: A13,A14,A15,A16,A17,A18,A19,A20
         check(32'h2034,
-              32'hA0000010, 32'hA0000011, 32'hA0000012, 32'hA0000013,
-              32'hA0000014, 32'hA000000D, 32'hA000000E, 32'hA000000F);
+              32'hA000000D, 32'hA000000E, 32'hA000000F, 32'hA0000010,
+              32'hA0000011, 32'hA0000012, 32'hA0000013, 32'hA0000014);
 
         $display("============================================================");
         $display(" All fetches: 1 cycle, 8 instructions, no stall.");

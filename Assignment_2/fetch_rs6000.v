@@ -75,60 +75,44 @@ module fetch_unit_rs6000 (
     inst_cache_line #(.BANK_ID(6)) c6 (.start_bank(start_bank), .slot_offset(off6), .start_row(start_row), .instruction_out(b6));
     inst_cache_line #(.BANK_ID(7)) c7 (.start_bank(start_bank), .slot_offset(off7), .start_row(start_row), .instruction_out(b7));
 
+    // MUX ROTATION: reorder bank outputs into fetch/program sequence.
+    // inst_out_0 = instruction at start_address, inst_out_1 at +4, etc.
+    function [31:0] mux8;
+        input [2:0]  s;
+        input [31:0] i0, i1, i2, i3, i4, i5, i6, i7;
+        case (s)
+            3'd0: mux8 = i0;
+            3'd1: mux8 = i1;
+            3'd2: mux8 = i2;
+            3'd3: mux8 = i3;
+            3'd4: mux8 = i4;
+            3'd5: mux8 = i5;
+            3'd6: mux8 = i6;
+            3'd7: mux8 = i7;
+            default: mux8 = 32'hx;
+        endcase
+    endfunction
+
+    wire [2:0] s0 = start_bank + 3'd0;
+    wire [2:0] s1 = start_bank + 3'd1;
+    wire [2:0] s2 = start_bank + 3'd2;
+    wire [2:0] s3 = start_bank + 3'd3;
+    wire [2:0] s4 = start_bank + 3'd4;
+    wire [2:0] s5 = start_bank + 3'd5;
+    wire [2:0] s6 = start_bank + 3'd6;
+    wire [2:0] s7 = start_bank + 3'd7;
+
     always @(posedge clk) begin
         addr_reg   <= start_address;
         bank_reg   <= start_bank;
-        inst_out_0 <= b0;
-        inst_out_1 <= b1;
-        inst_out_2 <= b2;
-        inst_out_3 <= b3;
-        inst_out_4 <= b4;
-        inst_out_5 <= b5;
-        inst_out_6 <= b6;
-        inst_out_7 <= b7;
+        inst_out_0 <= mux8(s0, b0, b1, b2, b3, b4, b5, b6, b7);
+        inst_out_1 <= mux8(s1, b0, b1, b2, b3, b4, b5, b6, b7);
+        inst_out_2 <= mux8(s2, b0, b1, b2, b3, b4, b5, b6, b7);
+        inst_out_3 <= mux8(s3, b0, b1, b2, b3, b4, b5, b6, b7);
+        inst_out_4 <= mux8(s4, b0, b1, b2, b3, b4, b5, b6, b7);
+        inst_out_5 <= mux8(s5, b0, b1, b2, b3, b4, b5, b6, b7);
+        inst_out_6 <= mux8(s6, b0, b1, b2, b3, b4, b5, b6, b7);
+        inst_out_7 <= mux8(s7, b0, b1, b2, b3, b4, b5, b6, b7);
     end
-
-    // /*  MUX ROTATION: uncomment to reorder outputs into fetch sequence.
-    //     inst_out_0 will be the instruction at start_address,
-    //     inst_out_1 at start_address+4, etc.
-    //
-    // function [31:0] mux8;
-    //     input [2:0]  s;
-    //     input [31:0] i0, i1, i2, i3, i4, i5, i6, i7;
-    //     case (s)
-    //         3'd0: mux8 = i0;
-    //         3'd1: mux8 = i1;
-    //         3'd2: mux8 = i2;
-    //         3'd3: mux8 = i3;
-    //         3'd4: mux8 = i4;
-    //         3'd5: mux8 = i5;
-    //         3'd6: mux8 = i6;
-    //         3'd7: mux8 = i7;
-    //         default: mux8 = 32'hx;
-    //     endcase
-    // endfunction
-    //
-    // wire [2:0] s0 = start_bank + 3'd0;
-    // wire [2:0] s1 = start_bank + 3'd1;
-    // wire [2:0] s2 = start_bank + 3'd2;
-    // wire [2:0] s3 = start_bank + 3'd3;
-    // wire [2:0] s4 = start_bank + 3'd4;
-    // wire [2:0] s5 = start_bank + 3'd5;
-    // wire [2:0] s6 = start_bank + 3'd6;
-    // wire [2:0] s7 = start_bank + 3'd7;
-    //
-    // always @(posedge clk) begin
-    //     addr_reg   <= start_address;
-    //     bank_reg   <= start_bank;
-    //     inst_out_0 <= mux8(s0, b0, b1, b2, b3, b4, b5, b6, b7);
-    //     inst_out_1 <= mux8(s1, b0, b1, b2, b3, b4, b5, b6, b7);
-    //     inst_out_2 <= mux8(s2, b0, b1, b2, b3, b4, b5, b6, b7);
-    //     inst_out_3 <= mux8(s3, b0, b1, b2, b3, b4, b5, b6, b7);
-    //     inst_out_4 <= mux8(s4, b0, b1, b2, b3, b4, b5, b6, b7);
-    //     inst_out_5 <= mux8(s5, b0, b1, b2, b3, b4, b5, b6, b7);
-    //     inst_out_6 <= mux8(s6, b0, b1, b2, b3, b4, b5, b6, b7);
-    //     inst_out_7 <= mux8(s7, b0, b1, b2, b3, b4, b5, b6, b7);
-    // end
-    // */
 
 endmodule
