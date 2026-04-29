@@ -22,6 +22,7 @@
 vivado_pid*.str
 vivado*.jou
 vivado*.log
+*.exe
 
 # IP cores — generated output (keep .xci source, ignore generated output)
 */ip/**/*.vho
