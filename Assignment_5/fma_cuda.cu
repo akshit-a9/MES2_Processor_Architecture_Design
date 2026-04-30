@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <cuda_runtime.h>
 
-#define N       262144
+#define N       8192*32
 #define ITERS   1024
 #define THREADS 256
 #define BLOCKS  (N / THREADS)

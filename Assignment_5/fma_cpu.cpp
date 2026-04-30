@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <chrono>
 
-#define N     262144
+#define N     8192*32
 #define ITERS 1024
 
 #if defined(_MSC_VER)
